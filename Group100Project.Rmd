@@ -1,0 +1,197 @@
+---
+title: "Liberal Party Analysis Report"
+author: "Chloe Zhang, Yijing Shen, Fangzheng Zhang, TianHuiqi Chen"
+subtitle: "Suggestions to Liberal Party and Justin Trudeau"
+date: December 7, 2020
+frontsize: 10pt
+output: 
+  beamer_presentation:
+    theme: "Pittsburgh"
+    colortheme: "orchid"
+    fonttheme: "structurebold"
+    slide_level: 2
+---
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.height=3}
+# echo=FALSE will stop the code chunk from appearing in the knit document
+# warning=FALSE and message=FALSE will stop R messages from appearing in the knit document
+library(tidyverse)
+library(rpart)
+library(partykit)
+library(broom)
+
+# the data is not in the csv form we usually use, but in an R format, .rds.
+# the following line saves it as ces19 and you can work with it as you're used to now
+ces19 <- readRDS("ces19.rds")
+
+# see the project information page for more information: https://q.utoronto.ca/courses/184002/pages/project
+```
+
+## Overall Introduction
+
+We would like to suggest one of the Canadian federal political parties - the Liberal Party.\
+In order to give suggestions to the leader and the Party, we are going to discover and get conclusions from voters’ preferences:\
+1. We will estimate a range of voters' age who will vote for the Liberal Party to understand which age group is the dominating supporter of the Liberal Party.\
+2. We will build a linear regression model to discover the association between the score of how voters feel about Justin Trudeau as the leader of Liberal Party, and the score of how citizens feel about the Liberal Party in general, in which to discover whether voters consider Justin Trudeau as a qualified Prime Minister Candidate and a Liberal Party leader.\
+3. We will estimate a range of rating on Justin Trudeau to discover if citizens do not satisfy about Liberal Party because of Justin Trudeau not keeping the election promises he made in 2015.\
+
+
+## Data Summary
+We use different filtered data subsets from the original data set 'ces19' in each research question.\
+
+- In the first research study, we filter out the people whose first vote choice is Liberal Party and save the data as a subset named 'ces_liberal_supporter'. Then, from the subset, we randomly select a sample with size of 2000 and save it as 'observed_data' to calculate the test statistic.\
+
+- In the second research study, we filter out NA values in row 'party_rating_23' and 'lead_rating_23' and select only these party and leader rating variables from the filtered data and save it as the population named with 'model2'.\
+
+- In the third research study, we take out only the group fo people who were not very satisfied about the Liberal Party from the 'fed_gov_sat' variable, then select 'fed_gov_sat', 'lib_promises', and 'lead_rating_23' and save the data as the population for this study.
+
+
+## Topic1: Age Range Estimation
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.height=3}
+require(dplyr)
+require(ggplot2)
+ces19_liberal_supporter <- ces19 %>% filter(votechoice == "Liberal Party")
+observed_data <- ces19_liberal_supporter %>% sample_n(size = 2000)
+obs_mean <- observed_data %>% summarise(mean(age))
+
+set.seed(100)
+boot_means <- rep(NA,5000)
+
+for (i in 1:5000){
+  boot_samp <- observed_data %>% sample_n(size = 2000, replace = TRUE)
+  boot_means[i] <- as.numeric(boot_samp %>% summarise(mean(age)))
+}
+boot_means <- tibble(mean_age = boot_means)
+
+upper_quantile <- quantile(na.omit(boot_means$mean_age),0.975)
+lower_quantile <- quantile(na.omit(boot_means$mean_age),0.025)
+
+ggplot(boot_means, aes(x= mean_age))+
+  geom_histogram(color ="grey", fill= "pink") + 
+  labs(x = "Means from bootstrap samples", title = "Histogram for the mean of liberal supporters' ages") +
+  geom_vline(xintercept = upper_quantile, color = "black") +
+  geom_vline(xintercept = lower_quantile, color = "black")
+
+```
+
+
+We will discover the first question by using bootstrapping method, to estimate a plausible range of voters' age whose first choice is the Liberal Party, in order to gain information about the primary age group of the Liberal Party supporters. Since the main focus of this research question is to estimate a reasonable range of age of Liberal Party supporters, bootstrapping is a appropriate method to be used which creates a range of plausible values for the population parameter. With information about the age group, we are able to focus more on propagate the other age groups that are valid to vote in next election to attract potential supporters.
+
+
+## Analysis
+
+|     2.5%        |                  97.5%               |
+|-----------------|--------------------------------------|
+|   49.16650      |               50.66354               |
+
+The table above displays the result of our bootstrap sampling estimation, which means that we are 95% confident that the mean age of citizens who choose the Liberal Party as first choice in 2019 is between 49.16650 years old and 50.66354 years old. In bootstrap sampling, we rapidly random-pick samples of size 2000 without replacement from the initial sample (also with size 2000) picked from the population, which in this research topic is people whose first choice on election is Liberal party in 2019. In each bootstrap sample, we calculate the average age and record the genenral distribution.
+
+
+## Suggestions
+Since most Liberal Party supporters in 2019 were in the age range from 49 to 51, we consider that young adults and seniors are less intersted in political events comparing with middle-aged adults. Therefore, we suggest to propagate the Liberal party to young adults and seniors more often than the middle aged group while also keeping the attention from people in the middle age range to Liberal Party to maintain their interests and supports.
+
+
+## Topic 2: Party and Leader Rating
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.height=2}
+
+model2 <- ces19 %>%
+  filter(!is.na(party_rating_23) & !is.na(lead_rating_23)) %>%
+  select(party_rating_23, lead_rating_23)
+
+model2 %>%
+  ggplot(aes(x=party_rating_23, y=lead_rating_23)) +
+  geom_point(color='snow4') +
+  geom_smooth(method='lm', se=FALSE, color='slateblue4')
+
+linear_model <- lm(lead_rating_23 ~ party_rating_23, data=model2)
+```
+
+In the second research topic, we will discover the linear association between party rating of Liberal Party and leader rating of Justin Trudeau in order to gain insights about Canadian's feeling about the leader of Liberal Party. Since we want to study the relationship between two variables, we use a single linear regression model. We set up the linear model based on the null hypothesis that the slope of the fitted linear model is equal to 0. 
+$$H_0: \beta_1 = 0$$ 
+$$H_1: \beta_1 \neq 0$$
+
+
+## Analysis
+The table below displays coefficients of the linear regression:
+
+|                 | Estimate | Std. Error | t value   | Pr(>\|t\|) |
+|-----------------|----------|------------|-----------|------------|
+| (Intercept)     | -0.41015 |   0.13946  | -2.94090  |   0.00327  |
+| party_rating_23 | 0.94117  |   0.00237  | 396.67596 |   0.00000  |
+
+From the table, the p-value of the hypothesis testing is 0 means we have very strong evidence to reject the null hypothesis that the slope of the fitted linear model equals to 0. Thus, combining with information from the scatter plot, we can visually summarize that there are positive linear relationship between the Liberal party rating and the leader rating. Since the correlation is 0.907 which is close to 1, the two rating variables have strong linear association. The value of correlation(r) and coefficient of determination(R^2) are representative data that implies the test the reliability and persuasion of our model.\
+
+
+## Analysis
+Correlation is a value between -1 and 1, which is used to show the strength and direction of the linear relationship between voters’ feeling of Liberal Party and Justin Trudeau. The value we got for correlation is 0.907, which means for a big part of voters, their feeling of Justin Trudeau is increasing with their feeling of Liberal Party.\
+Coefficient of determination is a value between 0 and 1 which is used to show how much variability in y is explained by the fitted regression line. The value we got for coefficient of determination is 0.82, which means our fitted regression line is very persuasive to show the variability of how the change of voters’ feeling about Liberal Party influence voters’ feeling of Justin Trudeau.\
+The slope of the fitted linear model is 0.94 which means every 1 score increase on party rating of Liberal results 0.94 higher rating on Justin Trudeau.
+
+## Suggestions
+From the result of linear regression model, we may figure out the information that Justin Trudeau political performances are based on the ideology of Liberal Party. Therefore, Justin Trudeau is a suitable candidate of Prime Minister of Canada to represent the Liberal Party as the leader. Additionally, if Justin Trudeau continues his political ideology under Liberal Party's philosophy, the party can maintain a relatively stable supporting rate.
+
+## Topic 3: Leader Rating Estimation
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.height=3}
+model3 <- ces19 %>%
+  filter(!is.na(fed_gov_sat))
+summary_table <- model3 %>%
+  summarise(n_very_sat = sum(fed_gov_sat == 'Very satisfied'),
+            n_fair_sat = sum(fed_gov_sat == 'Fairly satisfied'), 
+            n_not_sat = sum(fed_gov_sat == 'Not very satisfied'), 
+            n_very_unsat = sum(fed_gov_sat =='Not at all satisfied'))
+
+model3_unsat <- ces19 %>%
+  filter(fed_gov_sat == 'Not very satisfied') %>%
+  filter(!is.na(lead_rating_23)) %>%
+  select(fed_gov_sat, lead_rating_23, lib_promises)
+
+model3_unsat %>%
+  ggplot(aes(x=lib_promises)) +
+  geom_bar(color='cornflowerblue', fill='antiquewhite1') +
+  coord_flip()
+
+#Estimate how this group of people feeling about Justin Trudeau.
+population_mean <- model3_unsat %>%
+  summarize(pop_mean_lead_rating = mean(lead_rating_23))
+population_mean <- as.numeric(population_mean)
+
+set.seed(100)
+observed_data <- model3_unsat %>%
+  sample_n(size=2000)
+
+obs_mean <- observed_data %>%
+  summarize(mean(lead_rating_23))
+test_statistic <- as.numeric(obs_mean)
+
+boot_means <- rep(NA, 5000)
+for(i in 1:5000) {
+  boot_sample <- observed_data %>% sample_n(size=2000, replace=TRUE)
+  boot_means[i] <- as.numeric(boot_sample %>% summarize(mean_lead_rating = mean(lead_rating_23)))
+}
+boot_means <- tibble(mean_lead_rating = boot_means)
+```
+
+## Analysis
+In the third research topic, we will estimate the average leader rating of Justin Trudeau from people that are not quite satisfied about Liberal Party with the reason of Justin Trudeau not keeping his promises in the 2015 election. Since we expect a estimated result to be a possible range of the actual value of the average rating of Justin Trudeau, bootstrapping sampling is a efficient method to apply. The population for this research question is people who answered the survey in 2019 and responded they are not very satisfied about the federal government at the time, which was lead by the Liberal Party. We focus on the main cause of dissatisfaction on how the population thought on whether Justin Trudeau kept his promises from 2015 election. From the bar plot, we may summarize that most of the population disagree that Justin Trudeau had kept his promises, and it is a causation of dissatisfaction on Liberal Party. Therefore, we are reasonable to expect the average rating of Justin Trudeau from the population is relatively low.
+
+## Result and Suggestion
+| 2.5%     | 25%      | 50%      | 75%      | 97.5%    |
+|----------|----------|----------|----------|----------|
+| 37.20086 | 37.80725 | 38.13575 | 38.48113 | 39.08401 |
+From the summary table of result above, we are 95% confident that the mean rating of Justin Trudeau from people who are not very satisfied about Liberal Party in 2019 is between 37.80725 to 39.08401 out of 100.\ 
+
+By the data we shown above, we can see most citizens who gave low marks on Justin Trudeau since he broke his promise from 2015 election. Thus, we suggest Justin Trudeau as the leader of Liberal Party try to keep his promises made during the election in his capacity, in order to earn trust and preference from the population. Or alternatively, he may want to make amounts of less promises, instead, to make exquisite, realistic promises.
+
+## Limitations
+1. The data set was from 2019, therefore, it is not up_to_date for using on research study in 2020.\
+2. The limitation of topic 1 and topic 3 is the reliability of our result is rely on the reliability of the original sample. Since All data shown in the graph is calculated from the original sample, we must ensure it is well selected from the original data set. Also, if there are extreme values in the original data set and being taken in the original sample, then bootstrapping model may underestimate the variability of the original data set.\
+
+## Limitations
+3. There may exist confounding variables in both topic 2 and topic 3. In topic 2, the party rating variable is not the only variable that affect the leader rating while they may also affect the party rating, such as feeling on immigration and LGBT minorities. In the topic 3, the causation of dissatisfaction toward the Liberal Party can be other than feelings on Justin Trudeau, for example, immigration policies may also be the reason of people unsatisfied about the party.\
+4. Since topic 2 involves with linear regression model, the existence of residual (extreme values) may affect the accuracy and coverage of the fitted model.\
+
+## Overall Conclusion
+In consequence, we suggest the Liberal Party pursue propaganda to the groups of young adults and senior based on the result from research topic 1;\
+From topic 2, the rating of the feeling of Justin Trudeau and Liberal Party has a positive linear relationship. Therefore, we suggest Justin Trudeau to continue his political ideology and carry forward the policies of Liberal Party;\
+Combining the research result of topic 2 and 3, we may conclude that although Justin Trudeau has good political concepts, if he cannot fulfill public's expectations from his promises, he may lose supports from the public.

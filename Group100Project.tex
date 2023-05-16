@@ -1,0 +1,389 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+  ignorenonframetext,
+]{beamer}
+\usepackage{pgfpages}
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
+% Prevent slide breaks in the middle of a paragraph
+\widowpenalties 1 10000
+\raggedbottom
+\setbeamertemplate{part page}{
+  \centering
+  \begin{beamercolorbox}[sep=16pt,center]{part title}
+    \usebeamerfont{part title}\insertpart\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{section page}{
+  \centering
+  \begin{beamercolorbox}[sep=12pt,center]{part title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+\setbeamertemplate{subsection page}{
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center]{part title}
+    \usebeamerfont{subsection title}\insertsubsection\par
+  \end{beamercolorbox}
+}
+\AtBeginPart{
+  \frame{\partpage}
+}
+\AtBeginSection{
+  \ifbibliography
+  \else
+    \frame{\sectionpage}
+  \fi
+}
+\AtBeginSubsection{
+  \frame{\subsectionpage}
+}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usetheme[]{Pittsburgh}
+\usecolortheme{orchid}
+\usefonttheme{structurebold}
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\newif\ifbibliography
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+\usepackage{caption}
+% Make caption package work with longtable
+\makeatletter
+\def\fnum@table{\tablename~\thetable}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Liberal Party Analysis Report},
+  pdfauthor={Chloe Zhang, Yijing Shen, Fangzheng Zhang, TianHuiqi Chen},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Liberal Party Analysis Report}
+\subtitle{Suggestions to Liberal Party and Justin Trudeau}
+\author{Chloe Zhang, Yijing Shen, Fangzheng Zhang, TianHuiqi Chen}
+\date{December 7, 2020}
+
+\begin{document}
+\frame{\titlepage}
+
+\begin{frame}{Overall Introduction}
+\protect\hypertarget{overall-introduction}{}
+We would like to suggest one of the Canadian federal political parties -
+the Liberal Party.\\
+In order to give suggestions to the leader and the Party, we are going
+to discover and get conclusions from voters' preferences:\\
+1. We will estimate a range of voters' age who will vote for the Liberal
+Party to understand which age group is the dominating supporter of the
+Liberal Party.\\
+2. We will build a linear regression model to discover the association
+between the score of how voters feel about Justin Trudeau as the leader
+of Liberal Party, and the score of how citizens feel about the Liberal
+Party in general, in which to discover whether voters consider Justin
+Trudeau as a qualified Prime Minister Candidate and a Liberal Party
+leader.\\
+3. We will estimate a range of rating on Justin Trudeau to discover if
+citizens do not satisfy about Liberal Party because of Justin Trudeau
+not keeping the election promises he made in 2015.\\
+\end{frame}
+
+\begin{frame}{Data Summary}
+\protect\hypertarget{data-summary}{}
+We use different filtered data subsets from the original data set
+`ces19' in each research question.\\
+
+\begin{itemize}
+\item
+  In the first research study, we filter out the people whose first vote
+  choice is Liberal Party and save the data as a subset named
+  `ces\_liberal\_supporter'. Then, from the subset, we randomly select a
+  sample with size of 2000 and save it as `observed\_data' to calculate
+  the test statistic.\\
+\item
+  In the second research study, we filter out NA values in row
+  `party\_rating\_23' and `lead\_rating\_23' and select only these party
+  and leader rating variables from the filtered data and save it as the
+  population named with `model2'.\\
+\item
+  In the third research study, we take out only the group fo people who
+  were not very satisfied about the Liberal Party from the
+  `fed\_gov\_sat' variable, then select `fed\_gov\_sat',
+  `lib\_promises', and `lead\_rating\_23' and save the data as the
+  population for this study.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Topic1: Age Range Estimation}
+\protect\hypertarget{topic1-age-range-estimation}{}
+\includegraphics{Group100Project_files/figure-beamer/unnamed-chunk-2-1.pdf}
+
+We will discover the first question by using bootstrapping method, to
+estimate a plausible range of voters' age whose first choice is the
+Liberal Party, in order to gain information about the primary age group
+of the Liberal Party supporters. Since the main focus of this research
+question is to estimate a reasonable range of age of Liberal Party
+supporters, bootstrapping is a appropriate method to be used which
+creates a range of plausible values for the population parameter. With
+information about the age group, we are able to focus more on propagate
+the other age groups that are valid to vote in next election to attract
+potential supporters.
+\end{frame}
+
+\begin{frame}{Analysis}
+\protect\hypertarget{analysis}{}
+\begin{longtable}[]{@{}ll@{}}
+\toprule()
+2.5\% & 97.5\% \\
+\midrule()
+\endhead
+49.16650 & 50.66354 \\
+\bottomrule()
+\end{longtable}
+
+The table above displays the result of our bootstrap sampling
+estimation, which means that we are 95\% confident that the mean age of
+citizens who choose the Liberal Party as first choice in 2019 is between
+49.16650 years old and 50.66354 years old. In bootstrap sampling, we
+rapidly random-pick samples of size 2000 without replacement from the
+initial sample (also with size 2000) picked from the population, which
+in this research topic is people whose first choice on election is
+Liberal party in 2019. In each bootstrap sample, we calculate the
+average age and record the genenral distribution.
+\end{frame}
+
+\begin{frame}{Suggestions}
+\protect\hypertarget{suggestions}{}
+Since most Liberal Party supporters in 2019 were in the age range from
+49 to 51, we consider that young adults and seniors are less intersted
+in political events comparing with middle-aged adults. Therefore, we
+suggest to propagate the Liberal party to young adults and seniors more
+often than the middle aged group while also keeping the attention from
+people in the middle age range to Liberal Party to maintain their
+interests and supports.
+\end{frame}
+
+\begin{frame}{Topic 2: Party and Leader Rating}
+\protect\hypertarget{topic-2-party-and-leader-rating}{}
+\includegraphics{Group100Project_files/figure-beamer/unnamed-chunk-3-1.pdf}
+
+In the second research topic, we will discover the linear association
+between party rating of Liberal Party and leader rating of Justin
+Trudeau in order to gain insights about Canadian's feeling about the
+leader of Liberal Party. Since we want to study the relationship between
+two variables, we use a single linear regression model. We set up the
+linear model based on the null hypothesis that the slope of the fitted
+linear model is equal to 0. \[H_0: \beta_1 = 0\] \[H_1: \beta_1 \neq 0\]
+\end{frame}
+
+\begin{frame}{Analysis}
+\protect\hypertarget{analysis-1}{}
+The table below displays coefficients of the linear regression:
+
+\begin{longtable}[]{@{}lllll@{}}
+\toprule()
+& Estimate & Std. Error & t value &
+Pr(\textgreater\textbar t\textbar) \\
+\midrule()
+\endhead
+(Intercept) & -0.41015 & 0.13946 & -2.94090 & 0.00327 \\
+party\_rating\_23 & 0.94117 & 0.00237 & 396.67596 & 0.00000 \\
+\bottomrule()
+\end{longtable}
+
+From the table, the p-value of the hypothesis testing is 0 means we have
+very strong evidence to reject the null hypothesis that the slope of the
+fitted linear model equals to 0. Thus, combining with information from
+the scatter plot, we can visually summarize that there are positive
+linear relationship between the Liberal party rating and the leader
+rating. Since the correlation is 0.907 which is close to 1, the two
+rating variables have strong linear association. The value of
+correlation(r) and coefficient of determination(R\^{}2) are
+representative data that implies the test the reliability and persuasion
+of our model.\\
+\end{frame}
+
+\begin{frame}{Analysis}
+\protect\hypertarget{analysis-2}{}
+Correlation is a value between -1 and 1, which is used to show the
+strength and direction of the linear relationship between voters'
+feeling of Liberal Party and Justin Trudeau. The value we got for
+correlation is 0.907, which means for a big part of voters, their
+feeling of Justin Trudeau is increasing with their feeling of Liberal
+Party.\\
+Coefficient of determination is a value between 0 and 1 which is used to
+show how much variability in y is explained by the fitted regression
+line. The value we got for coefficient of determination is 0.82, which
+means our fitted regression line is very persuasive to show the
+variability of how the change of voters' feeling about Liberal Party
+influence voters' feeling of Justin Trudeau.\\
+The slope of the fitted linear model is 0.94 which means every 1 score
+increase on party rating of Liberal results 0.94 higher rating on Justin
+Trudeau.
+\end{frame}
+
+\begin{frame}{Suggestions}
+\protect\hypertarget{suggestions-1}{}
+From the result of linear regression model, we may figure out the
+information that Justin Trudeau political performances are based on the
+ideology of Liberal Party. Therefore, Justin Trudeau is a suitable
+candidate of Prime Minister of Canada to represent the Liberal Party as
+the leader. Additionally, if Justin Trudeau continues his political
+ideology under Liberal Party's philosophy, the party can maintain a
+relatively stable supporting rate.
+\end{frame}
+
+\begin{frame}{Topic 3: Leader Rating Estimation}
+\protect\hypertarget{topic-3-leader-rating-estimation}{}
+\includegraphics{Group100Project_files/figure-beamer/unnamed-chunk-4-1.pdf}
+\end{frame}
+
+\begin{frame}{Analysis}
+\protect\hypertarget{analysis-3}{}
+In the third research topic, we will estimate the average leader rating
+of Justin Trudeau from people that are not quite satisfied about Liberal
+Party with the reason of Justin Trudeau not keeping his promises in the
+2015 election. Since we expect a estimated result to be a possible range
+of the actual value of the average rating of Justin Trudeau,
+bootstrapping sampling is a efficient method to apply. The population
+for this research question is people who answered the survey in 2019 and
+responded they are not very satisfied about the federal government at
+the time, which was lead by the Liberal Party. We focus on the main
+cause of dissatisfaction on how the population thought on whether Justin
+Trudeau kept his promises from 2015 election. From the bar plot, we may
+summarize that most of the population disagree that Justin Trudeau had
+kept his promises, and it is a causation of dissatisfaction on Liberal
+Party. Therefore, we are reasonable to expect the average rating of
+Justin Trudeau from the population is relatively low.
+\end{frame}
+
+\begin{frame}{Result and Suggestion}
+\protect\hypertarget{result-and-suggestion}{}
+\begin{longtable}[]{@{}lllll@{}}
+\toprule()
+2.5\% & 25\% & 50\% & 75\% & 97.5\% \\
+\midrule()
+\endhead
+37.20086 & 37.80725 & 38.13575 & 38.48113 & 39.08401 \\
+\bottomrule()
+\end{longtable}
+
+From the summary table of result above, we are 95\% confident that the
+mean rating of Justin Trudeau from people who are not very satisfied
+about Liberal Party in 2019 is between 37.80725 to 39.08401 out of 100.~
+
+By the data we shown above, we can see most citizens who gave low marks
+on Justin Trudeau since he broke his promise from 2015 election. Thus,
+we suggest Justin Trudeau as the leader of Liberal Party try to keep his
+promises made during the election in his capacity, in order to earn
+trust and preference from the population. Or alternatively, he may want
+to make amounts of less promises, instead, to make exquisite, realistic
+promises.
+\end{frame}
+
+\begin{frame}{Limitations}
+\protect\hypertarget{limitations}{}
+\begin{enumerate}
+\tightlist
+\item
+  The data set was from 2019, therefore, it is not up\_to\_date for
+  using on research study in 2020.\\
+\item
+  The limitation of topic 1 and topic 3 is the reliability of our result
+  is rely on the reliability of the original sample. Since All data
+  shown in the graph is calculated from the original sample, we must
+  ensure it is well selected from the original data set. Also, if there
+  are extreme values in the original data set and being taken in the
+  original sample, then bootstrapping model may underestimate the
+  variability of the original data set.\\
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Limitations}
+\protect\hypertarget{limitations-1}{}
+\begin{enumerate}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  There may exist confounding variables in both topic 2 and topic 3. In
+  topic 2, the party rating variable is not the only variable that
+  affect the leader rating while they may also affect the party rating,
+  such as feeling on immigration and LGBT minorities. In the topic 3,
+  the causation of dissatisfaction toward the Liberal Party can be other
+  than feelings on Justin Trudeau, for example, immigration policies may
+  also be the reason of people unsatisfied about the party.\\
+\item
+  Since topic 2 involves with linear regression model, the existence of
+  residual (extreme values) may affect the accuracy and coverage of the
+  fitted model.\\
+\end{enumerate}
+\end{frame}
+
+\begin{frame}{Overall Conclusion}
+\protect\hypertarget{overall-conclusion}{}
+In consequence, we suggest the Liberal Party pursue propaganda to the
+groups of young adults and senior based on the result from research
+topic 1;\\
+From topic 2, the rating of the feeling of Justin Trudeau and Liberal
+Party has a positive linear relationship. Therefore, we suggest Justin
+Trudeau to continue his political ideology and carry forward the
+policies of Liberal Party;\\
+Combining the research result of topic 2 and 3, we may conclude that
+although Justin Trudeau has good political concepts, if he cannot
+fulfill public's expectations from his promises, he may lose supports
+from the public.
+\end{frame}
+
+\end{document}
